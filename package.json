@@ -1,0 +1,25 @@
+{
+  "name": "whats2api",
+  "version": "1.0.3",
+  "main": "src/index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "example": "node examples/index.js",
+    "media": "node examples/media.js",
+    "download": "node examples/download.js",
+    "events": "node examples/events.js",
+    "test": "node  src/index.js"
+  },
+  "exports": {
+    "./helpers": "./src/helpers.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "express": "^4.19.2"
+  }
+}
