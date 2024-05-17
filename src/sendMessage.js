@@ -1,4 +1,6 @@
 const request =  require('./request')
+const fs = require('fs')
+const FormData = require('form-data')
 
 module.exports =  function createSendMessage({
     fetch, auth, connectionId
@@ -10,7 +12,7 @@ module.exports =  function createSendMessage({
     async function sendMessage(jid, text, options = {}) {
         if (!jid) throw new Error('No jid provided');
         if (!text) throw new Error('No text provided');
-        return request({
+        return request({ 
             fetch,
             auth,
             connectionId,
@@ -87,9 +89,67 @@ module.exports =  function createSendMessage({
         }) 
     }
 
-    async function sendGif(jid, message, options = {}) {
+    async function sendMedia(jid, message, options = {}, type) {
         if (!jid) throw new Error('No jid provided');
-        if (!message?.url) throw new Error('No url provided');
+        if (!message?.url && !message.filepath) throw new Error('No file provided');
+        if (!type) throw new Error('No type provided');
+
+        if (message.filepath) {
+            const form = new FormData();
+            const file = fs.createReadStream(message.filepath)
+            form.append('file', file);
+
+            const payload = {
+                connectionId: connectionId,
+                method: "sendMessage",
+                params: [
+                    jid,
+                    {
+                        ...message,
+                    },
+                    {
+                        ...(options ?? {}),
+                    }
+                ]
+            }
+
+            if (message?.mimetype) {
+                payload.params[2].mimetype = message.mimetype
+            }
+
+            if (message?.fileName) {
+                payload.params[2].fileName = message.fileName
+            }
+
+            if (!Object.keys(payload.params[2]).length) {
+                payload.params.splice(2, 1)
+            }
+
+            form.append('data', JSON.stringify(payload));
+            
+            const token = await auth.authenticate();
+
+            const headers = { 
+                ...form.getHeaders(),
+                'Authorization': `Bearer ${token.token}`,
+            }
+            
+            try {
+                let res = await fetch(
+                    `/connections/request`,
+                    {
+                        method: 'POST',
+                        body: form,
+                        headers,
+                    }
+                )
+                const json = await res.json()
+                if (json.sucess) return json.result
+                throw json
+            } catch (error) {
+                throw error
+            }
+        }
 
         return request({
             fetch,
@@ -99,125 +159,55 @@ module.exports =  function createSendMessage({
             params: [
                 jid,
                 {
-                    video: {
+                    [type]: {
                         url: message.url
                     },
-                    caption: message.caption,
-                    gifPlayback: true,
+                    ...message
                 },
-                options ?? {}
+                {
+                    ...(options ?? {}),
+                    mimetype: message.mimetype,
+                    fileName: message.fileName
+                }
             ]
         }) 
+
+    }
+
+    async function sendGif(jid, message, options = {}) {
+        if (!jid) throw new Error('No jid provided');
+        if (!message) throw new Error('No url provided');
+        message.gifPlayback = true
+
+        return sendMedia(jid, message, options, 'gif')
     }
     async function sendVideo(jid, message, options = {}) {
         if (!jid) throw new Error('No jid provided');
-        if (!message?.url) throw new Error('No url provided');
-        if (!message?.mimetype) throw new Error('No mimetype provided');
-        if (!message?.fileName) throw new Error('No fileName provided');
+        if (!message) throw new Error('No url provided');
 
-        return request({
-            fetch,
-            auth,
-            connectionId,
-            method: 'sendMessage',
-            params: [
-                jid,
-                {
-                    video: {
-                        url: message.url
-                    },
-                    caption: message.caption,
-                },
-                {
-                    ...(options ?? {}),
-                    mimetype: message.mimetype,
-                    fileName: message.fileName
-                }
-            ]
-        }) 
+        return sendMedia(jid, message, options, 'video')
     }
+
     async function sendImg(jid, message, options = {}) {
         if (!jid) throw new Error('No jid provided');
-        if (!message?.url) throw new Error('No url provided');
-        if (!message?.mimetype) throw new Error('No mimetype provided');
-        if (!message?.fileName) throw new Error('No fileName provided');
+        if (!message) throw new Error('No url provided');
 
-        return request({
-            fetch,
-            auth,
-            connectionId,
-            method: 'sendMessage',
-            params: [
-                jid,
-                {
-                    image: {
-                        url: message.url
-                    },
-                    caption: message.caption,
-                },
-                {
-                    ...(options ?? {}),
-                    mimetype: message.mimetype,
-                    fileName: message.fileName
-                }
-            ]
-        }) 
+        return sendMedia(jid, message, options, 'image')
     }
     
     async function sendAudio(jid, message, options = {}) {
-        if (!jid) throw new Error('No jid provided');
-        if (!message?.url) throw new Error('No url provided');
-        if (!message?.mimetype) throw new Error('No mimetype provided');
-        if (!message?.fileName) throw new Error('No fileName provided');
         
-        return request({
-            fetch,
-            auth,
-            connectionId,
-            method: 'sendMessage',
-            params: [
-                jid,
-                {
-                    audio: {
-                        url: message.url
-                    }
-                },
-                {
-                    ...(options ?? {}),
-                    ptt: true,
-                    mimetype: message.mimetype,
-                    fileName: message.fileName
-                }
-            ]
-        }) 
+        if (!jid) throw new Error('No jid provided');
+        if (!message) throw new Error('No url provided');
+        message.ptt = true
+        return sendMedia(jid, message, options, 'audio')
     }
 
     async function sendDoc(jid, message, options = {}) {
         if (!jid) throw new Error('No jid provided');
-        if (!message?.url) throw new Error('No url provided');
-        if (!message?.mimetype) throw new Error('No mimetype provided');
-        if (!message?.fileName) throw new Error('No fileName provided');
-        
-        return request({
-            fetch,
-            auth,
-            connectionId,
-            method: 'sendMessage',
-            params: [
-                jid,
-                {
-                    document: {
-                        url: message.url
-                    },
-                    caption: message.caption,
-                },
-                {
-                    ...(options ?? {}),
-                    mimetype: message.mimetype,
-                    fileName: message.fileName
-                }
-            ]
-        }) 
+        if (!message) throw new Error('No url provided');
+
+        return sendMedia(jid, message, options, 'document')
     }
 
     return {

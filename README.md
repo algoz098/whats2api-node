@@ -88,7 +88,26 @@ await client.sendReaction(jid, {
 
 ### Sending medias
 
-At this moment: the medias have to be public available, if you have sensitive medias, add a logic to allow a single request using a ID and protect your media afterwards.
+You can send medias in two ways, using a public url, or defining a local file to upload to whatsapp
+
+#### For local files:
+
+```js
+const filepath = path.resolve(__dirname, "example.jpg"); // you can define the file here for example
+console.log("sending image...", filepath);
+// caption is optional
+let res = await client.sendImg(jid, { filepath, caption: "Hello World" }); // if used filepath, it will try to find locally
+```
+
+All the methods available:
+
+- `client.sendGif`
+- `client.sendVideo`
+- `client.sendImg`
+- `client.sendAudio`
+- `client.sendDoc`
+
+#### For public urls:
 
 ```js
 const mp4Url =
