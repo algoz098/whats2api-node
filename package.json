@@ -1,6 +1,6 @@
 {
   "name": "whats2api",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "src/index.js",
   "license": "MIT",
   "repository": "https://github.com/algoz098/whats2api-node",
@@ -15,10 +15,10 @@
     "test": "node  src/index.js"
   },
   "exports": {
-    "./helpers": "./src/helpers.js"
+    "./helpers": "./src/helpers.js",
+    "./index": "./src/index.js"
   },
   "dependencies": {
-    "axios": "^1.6.8",
     "form-data": "^4.0.0",
     "node-fetch": "^2.6.7"
   },

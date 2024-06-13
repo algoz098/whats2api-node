@@ -52,6 +52,12 @@ console.log(
 await client.sendMessage(jid, text, { quoted: msg }); // msg from the basic example
 ```
 
+### Edit an message
+
+```js
+await client.editMessage(jid, text, key); // key is the msg.key which you want to edit
+```
+
 ### Sending location
 
 ```js

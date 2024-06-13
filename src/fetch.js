@@ -24,7 +24,6 @@ module.exports = function createFetch(creationOptions) {
 
                 return response;
             } catch (error) {
-                console.log(999, error)
                 if (error.abort) {
                     // console.log('Whats2API Fetch Error', error.abort, error)
                     throw error.response

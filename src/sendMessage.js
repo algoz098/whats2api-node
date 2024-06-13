@@ -27,6 +27,27 @@ module.exports =  function createSendMessage({
         }) 
     }
 
+    async function editMessage(jid, text, key, options = {}) {
+        if (!jid) throw new Error('No jid provided');
+        if (!text) throw new Error('No text provided');
+        if (!key) throw new Error('No key provided');
+        return request({ 
+            fetch,
+            auth,
+            connectionId,
+            method: 'sendMessage',
+            params: [
+                jid,
+                {
+                    text,
+                    edit: key
+                },
+                options ?? {}
+            ]
+        }) 
+    }
+
+
     async function sendLocation(jid, coords, options = {}) {
         if (!jid) throw new Error('No jid provided');
         if (!coords) throw new Error('No coords provided');
@@ -99,6 +120,8 @@ module.exports =  function createSendMessage({
             const file = fs.createReadStream(message.filepath)
             form.append('file', file);
 
+            delete message.filepath
+
             const payload = {
                 connectionId: connectionId,
                 method: "sendMessage",
@@ -108,21 +131,18 @@ module.exports =  function createSendMessage({
                         ...message,
                     },
                     {
-                        ...(options ?? {}),
+                        ...options,
+                        mimetype: message.mimetype,
+                        fileName: message.fileName
                     }
                 ]
             }
 
-            if (message?.mimetype) {
-                payload.params[2].mimetype = message.mimetype
-            }
-
-            if (message?.fileName) {
-                payload.params[2].fileName = message.fileName
-            }
+            delete message.mimetype
+            delete message.fileName
 
             if (!Object.keys(payload.params[2]).length) {
-                payload.params.splice(2, 1)
+                delete payload.params[2]
             }
 
             form.append('data', JSON.stringify(payload));
@@ -219,6 +239,7 @@ module.exports =  function createSendMessage({
         sendVideo,
         sendImg,
         sendAudio,
-        sendDoc
+        sendDoc,
+        editMessage
     }
 }

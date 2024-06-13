@@ -76,7 +76,8 @@ function isMedia(message) {
 
 function getText(message) {
     const type = getType(message);
-    return message[type].conversation ?? message[type].text ?? message[type].caption ?? null;
+    if (type === 'conversation') return message.conversation;
+    return message[type].text ?? message[type].caption ?? null;
 }
 
 
