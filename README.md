@@ -250,6 +250,7 @@ Important, this method ignores all the message types which are protocols, or jus
 ```js
 const helpers = require('whats2api/helpers')
 const msg = // msg came through an event or database
+const isContact = helpers.msg.isContact(msg) //true/false
 const isImg = helpers.msg.isImg(msg) // true/false
 const isDoc = helpers.msg.isDoc(msg) // true/false
 const isAudio = helpers.msg.isAudio(msg) // true/false
@@ -274,4 +275,6 @@ Most of the messages types can have text, use this method to extract it
 const helpers = require('whats2api/helpers')
 const msg = // msg came through an event or database
 const type = helpers.msg.getText(msg) // string|null
+// if the message is a contactMsg, this returns the vcard.
+// if this is a protocol message, it tries to extract the edittedmessage text for you.
 ```

@@ -1,6 +1,6 @@
 const notValidMessageType = [
     "reactionMessage",
-    "protocolMessage",
+    // "protocolMessage",
     "contextInfo",
     "ptvMessage",
     "inviteLinkGroupTypeV2",
@@ -41,6 +41,14 @@ function isAudio(message) {
     return audioTypes.includes(type);
 }
 
+const contactTypes = [
+    'contactMessage'
+]
+function isContact(message) {
+    const type = getType(message);
+    return contactTypes.includes(type);
+}
+
 const videoTypes = [
     'videoMessage'
 ]
@@ -76,10 +84,15 @@ function isMedia(message) {
 
 function getText(message) {
     const type = getType(message);
+    if (type === 'contactMessage') {
+        return message.contactMessage?.vcard ?? message.contactMessage?.displayName ?? '';
+    }
+    if (type === 'protocolMessage' && message.protocolMessage?.editedMessage) {
+        return getText(message.protocolMessage?.editedMessage)
+    }
     if (type === 'conversation') return message.conversation;
-    return message[type].text ?? message[type].caption ?? null;
+    return message[type]?.text ?? message[type]?.caption ?? null;
 }
-
 
 
 module.exports = {
@@ -91,6 +104,7 @@ module.exports = {
         isVideo,
         isSticker,
         isMedia,
+        isContact,
         getText,
     }
 }
